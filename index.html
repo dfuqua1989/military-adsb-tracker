@@ -24,7 +24,7 @@
     </header>
 
     <p class="text-xs text-slate-500 mb-2">
-      Live military aircraft via ADSB.lol /v2/mil. Many military aircraft disable ADS-B.
+      Live military aircraft via ADSB.lol (proxied). Many military aircraft disable ADS-B.
       Navy vessels = AIS only.
     </p>
 
@@ -52,8 +52,7 @@
 
     async function fetchData() {
       try {
-        const target = 'https://api.adsb.lol/v2/mil';
-        const url = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(target);
+        const url = '/.netlify/functions/mil';
         const res = await fetch(url);
         if (!res.ok) throw new Error(res.status + ' ' + res.statusText);
         const data = await res.json();
