@@ -9,27 +9,36 @@
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <style>
     body { background: #0f172a; color: #e2e8f0; margin: 0; }
-    #map { height: 55vh; background: #1e293b; transition: height 0.25s; }
+    #map { height: 50vh; background: #1e293b; transition: height 0.25s; }
     .mil { background: #7f1d1d !important; }
     .fullscreen-map #map { height: 100vh !important; position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 40; border-radius: 0; }
     .fullscreen-map .content-area { display: none; }
     .fullscreen-map .header-bar { position: fixed; top: 0; left: 0; right: 0; z-index: 50; background: rgba(15,23,42,0.92); backdrop-filter: blur(8px); padding: 8px 12px; }
     .fs-btn { position: absolute; bottom: 16px; right: 16px; z-index: 45; }
+    .hist-bar { background: #ef4444; height: 100%; border-radius: 2px; min-width: 2px; }
   </style>
 </head>
 <body class="p-3">
   <div id="app" class="max-w-7xl mx-auto">
     <header class="header-bar flex flex-wrap justify-between items-center mb-3 gap-2 py-2">
-      <h1 class="text-lg sm:text-2xl font-bold text-red-400">Military ADS-B</h1>
-      <div class="flex gap-2 items-center">
+      <h1 class="text-lg sm:text-xl font-bold text-red-400">Military ADS-B</h1>
+      <div class="flex gap-2 items-center flex-wrap">
         <span id="lastUpdate" class="text-xs text-slate-400">—</span>
         <button onclick="fetchData()" class="bg-red-700 hover:bg-red-600 px-3 py-1.5 rounded text-xs">Refresh</button>
         <button onclick="toggleFullscreen()" id="fsBtn" class="bg-slate-700 hover:bg-slate-600 px-3 py-1.5 rounded text-xs">Full Map</button>
       </div>
     </header>
 
-    <div class="content-area">
-      <p class="text-xs text-slate-500 mb-2">Live military aircraft via ADSB.lol. Many disable ADS-B.</p>
+    <div class="content-area mb-3 flex flex-wrap gap-2 items-center">
+      <select id="regionSelect" onchange="applyRegion()" class="bg-slate-800 border border-slate-600 rounded px-2 py-1 text-xs">
+        <option value="global">Global</option>
+        <option value="conus">CONUS</option>
+        <option value="europe">Europe</option>
+        <option value="mideast">Middle East</option>
+        <option value="pacific">Pacific</option>
+      </select>
+      <button onclick="fitAll()" class="bg-slate-700 px-2 py-1 rounded text-xs">Fit All</button>
+      <span class="text-xs text-slate-500">Select aircraft for trail</span>
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-3">
@@ -37,24 +46,54 @@
         <div id="map" class="rounded-lg border border-slate-700"></div>
         <button onclick="toggleFullscreen()" class="fs-btn bg-slate-800/90 text-white px-3 py-2 rounded-lg text-xs border border-slate-600">Map Full</button>
       </div>
-      <div class="content-area bg-slate-800 rounded-lg p-3 overflow-auto max-h-[50vh] lg:max-h-[55vh]">
-        <h2 class="font-semibold mb-2 text-sm">Aircraft (<span id="count">0</span>)</h2>
-        <table class="w-full text-xs">
-          <thead><tr class="text-left text-slate-400"><th>Callsign</th><th>ICAO</th><th>Alt</th><th>Spd</th></tr></thead>
-          <tbody id="tableBody"></tbody>
-        </table>
+      <div class="content-area space-y-3">
+        <div class="bg-slate-800 rounded-lg p-3 overflow-auto max-h-[35vh]">
+          <h2 class="font-semibold mb-2 text-sm">Aircraft (<span id="count">0</span>)</h2>
+          <table class="w-full text-xs">
+            <thead><tr class="text-left text-slate-400"><th>Callsign</th><th>ICAO</th><th>Alt</th><th>Spd</th></tr></thead>
+            <tbody id="tableBody"></tbody>
+          </table>
+        </div>
+        <div class="bg-slate-800 rounded-lg p-3">
+          <h3 class="text-xs font-semibold mb-2 text-slate-400">Altitude (ft)</h3>
+          <div id="altHist" class="flex items-end gap-0.5 h-16"></div>
+          <h3 class="text-xs font-semibold mb-2 mt-3 text-slate-400">Speed (kt)</h3>
+          <div id="spdHist" class="flex items-end gap-0.5 h-16"></div>
+        </div>
       </div>
     </div>
   </div>
 
   <script>
-    const map = L.map('map').setView([39.8, -98.5], 4);
+    const map = L.map('map').setView([30, 0], 2);
     L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
       attribution: '&copy; OSM, &copy; CARTO'
     }).addTo(map);
     let markers = L.layerGroup().addTo(map);
+    let trailLayer = L.layerGroup().addTo(map);
     let aircraft = [];
+    let selectedIcao = null;
+    let history = {};
     let isFullscreen = false;
+
+    const regions = {
+      global: { center: [30, 0], zoom: 2 },
+      conus: { center: [39, -98], zoom: 4 },
+      europe: { center: [50, 15], zoom: 4 },
+      mideast: { center: [28, 45], zoom: 4 },
+      pacific: { center: [20, 140], zoom: 3 }
+    };
+
+    function applyRegion() {
+      const r = regions[document.getElementById('regionSelect').value];
+      map.setView(r.center, r.zoom);
+    }
+
+    function fitAll() {
+      if (!aircraft.length) return;
+      const bounds = aircraft.map(a => [a.lat, a.lon]);
+      map.fitBounds(bounds, { padding: [30, 30], maxZoom: 6 });
+    }
 
     function toggleFullscreen() {
       isFullscreen = !isFullscreen;
@@ -63,21 +102,72 @@
       setTimeout(() => map.invalidateSize(), 280);
     }
 
+    function selectAircraft(icao) {
+      selectedIcao = icao;
+      drawTrail();
+      render();
+    }
+
+    function drawTrail() {
+      trailLayer.clearLayers();
+      if (!selectedIcao || !history[selectedIcao] || history[selectedIcao].length < 2) return;
+      const pts = history[selectedIcao].map(p => [p.lat, p.lon]);
+      L.polyline(pts, { color: '#fbbf24', weight: 2, opacity: 0.8 }).addTo(trailLayer);
+    }
+
+    function updateHistograms() {
+      const alts = aircraft.map(a => a.alt).filter(v => v != null);
+      const spds = aircraft.map(a => a.velocity).filter(v => v != null);
+      drawHist('altHist', alts, 0, 50000, 10);
+      drawHist('spdHist', spds, 0, 600, 10);
+    }
+
+    function drawHist(id, values, min, max, bins) {
+      const el = document.getElementById(id);
+      el.innerHTML = '';
+      if (!values.length) return;
+      const counts = new Array(bins).fill(0);
+      const step = (max - min) / bins;
+      values.forEach(v => {
+        const i = Math.min(bins - 1, Math.floor((v - min) / step));
+        counts[i]++;
+      });
+      const maxC = Math.max(...counts, 1);
+      counts.forEach(c => {
+        const bar = document.createElement('div');
+        bar.className = 'hist-bar flex-1';
+        bar.style.height = `${(c / maxC) * 100}%`;
+        el.appendChild(bar);
+      });
+    }
+
     async function fetchData() {
       try {
         const res = await fetch('/.netlify/functions/mil');
         if (!res.ok) throw new Error(res.status);
         const data = await res.json();
-        aircraft = (data.ac || []).map(a => ({
-          icao24: a.hex || '',
-          callsign: (a.flight || '').trim(),
-          lat: a.lat,
-          lon: a.lon,
-          alt: a.alt_baro || a.alt_geom || null,
-          velocity: a.gs || null
-        })).filter(a => a.lat != null && a.lon != null);
+        const now = Date.now();
+        aircraft = (data.ac || []).map(a => {
+          const obj = {
+            icao24: a.hex || '',
+            callsign: (a.flight || '').trim(),
+            lat: a.lat,
+            lon: a.lon,
+            alt: a.alt_baro || a.alt_geom || null,
+            velocity: a.gs || null
+          };
+          if (obj.lat != null && obj.lon != null) {
+            if (!history[obj.icao24]) history[obj.icao24] = [];
+            history[obj.icao24].push({ lat: obj.lat, lon: obj.lon, t: now });
+            if (history[obj.icao24].length > 40) history[obj.icao24].shift();
+          }
+          return obj;
+        }).filter(a => a.lat != null && a.lon != null);
+
         document.getElementById('lastUpdate').textContent = new Date().toLocaleTimeString() + ` (${aircraft.length})`;
         render();
+        updateHistograms();
+        drawTrail();
       } catch (e) {
         document.getElementById('lastUpdate').textContent = 'Error: ' + e.message;
       }
@@ -88,21 +178,25 @@
       markers.clearLayers();
       const tbody = document.getElementById('tableBody');
       tbody.innerHTML = '';
-      const bounds = [];
 
       aircraft.forEach(a => {
+        const isSel = a.icao24 === selectedIcao;
         const marker = L.circleMarker([a.lat, a.lon], {
-          radius: 6, color: '#ef4444', fillColor: '#ef4444', fillOpacity: 0.85
+          radius: isSel ? 8 : 6,
+          color: isSel ? '#fbbf24' : '#ef4444',
+          fillColor: isSel ? '#fbbf24' : '#ef4444',
+          fillOpacity: 0.85
         }).bindPopup(`${a.callsign || 'N/A'}<br>${a.icao24}<br>${a.alt != null ? Math.round(a.alt) + ' ft' : '—'} / ${a.velocity != null ? Math.round(a.velocity) + ' kt' : '—'}`);
+        marker.on('click', () => selectAircraft(a.icao24));
         markers.addLayer(marker);
-        bounds.push([a.lat, a.lon]);
 
         const tr = document.createElement('tr');
-        tr.className = 'mil';
+        tr.className = isSel ? 'bg-yellow-900' : 'mil';
+        tr.style.cursor = 'pointer';
+        tr.onclick = () => selectAircraft(a.icao24);
         tr.innerHTML = `<td>${a.callsign || '—'}</td><td>${a.icao24}</td><td>${a.alt != null ? Math.round(a.alt) : '—'}</td><td>${a.velocity != null ? Math.round(a.velocity) : '—'}</td>`;
         tbody.appendChild(tr);
       });
-      if (bounds.length) map.fitBounds(bounds, {padding: [20, 20], maxZoom: 6});
     }
 
     fetchData();
