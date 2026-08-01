@@ -5,21 +5,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Hormuz Watch — Iran Conflict & Strait Monitor</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <style>
     body { background: #0b1220; color: #e2e8f0; margin: 0; font-family: system-ui, sans-serif; }
-    #map { height: 52vh; background: #0f172a; }
     .kpi { background: linear-gradient(145deg, #1e293b, #0f172a); border: 1px solid #334155; }
     .alert-high { border-left: 4px solid #ef4444; }
     .alert-med { border-left: 4px solid #f59e0b; }
-    .fs-map #map { height: 100vh !important; position: fixed; inset: 0; z-index: 40; border-radius: 0; }
-    .fs-map .hide-fs { display: none; }
-    .fs-map header { position: fixed; top: 0; left: 0; right: 0; z-index: 50; background: rgba(11,18,32,0.95); }
   </style>
 </head>
 <body class="p-3">
-  <div id="app" class="max-w-7xl mx-auto">
+  <div id="app" class="max-w-3xl mx-auto">
     <header class="flex flex-wrap justify-between items-center gap-2 mb-4 py-2">
       <div>
         <h1 class="text-xl sm:text-2xl font-bold text-amber-400">Hormuz Watch</h1>
@@ -28,66 +22,47 @@
       <div class="flex gap-2 items-center text-xs">
         <span id="lastUpdate" class="text-slate-400">—</span>
         <button onclick="refreshAll()" class="bg-amber-600 hover:bg-amber-500 px-3 py-1.5 rounded font-medium">Refresh</button>
-        <button onclick="toggleFS()" id="fsBtn" class="bg-slate-700 px-3 py-1.5 rounded">Full Map</button>
       </div>
     </header>
 
-    <div id="statusBanner" class="hide-fs mb-4 p-3 rounded-lg bg-red-950/60 border border-red-800 text-sm">
-      <strong class="text-red-300">STATUS (as of early Aug 2026):</strong> <span id="statusText">Active US–Iran hostilities over Hormuz control. IRGC asserts approval required for transit; multiple commercial vessels attacked since July. US conducting repeated strikes. Shipping traffic severely reduced. Oil prices elevated.</span>
+    <div id="statusBanner" class="mb-4 p-3 rounded-lg bg-red-950/60 border border-red-800 text-sm">
+      <strong class="text-red-300">STATUS (as of early Aug 2026):</strong>
+      <span id="statusText"> Active US–Iran hostilities over Hormuz control. IRGC asserts approval required for transit; multiple commercial vessels attacked since July. US conducting repeated strikes. Shipping traffic severely reduced. Oil prices elevated.</span>
     </div>
 
-    <div class="hide-fs grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
-      <div class="kpi rounded-lg p-3">
-        <div class="text-xs text-slate-400 uppercase">Military Aircraft (region)</div>
-        <div class="text-2xl font-bold text-cyan-400" id="kpiAir">—</div>
-      </div>
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
       <div class="kpi rounded-lg p-3">
         <div class="text-xs text-slate-400 uppercase">Hormuz Risk Level</div>
-        <div class="text-2xl font-bold text-red-400" id="kpiRisk">HIGH</div>
+        <div class="text-2xl font-bold text-red-400">HIGH</div>
       </div>
       <div class="kpi rounded-lg p-3">
         <div class="text-xs text-slate-400 uppercase">Recent Incidents</div>
-        <div class="text-2xl font-bold text-amber-400" id="kpiInc">10+</div>
+        <div class="text-2xl font-bold text-amber-400">10+</div>
       </div>
       <div class="kpi rounded-lg p-3">
         <div class="text-xs text-slate-400 uppercase">Oil Flow Impact</div>
-        <div class="text-2xl font-bold text-orange-400" id="kpiOil">Severe</div>
+        <div class="text-2xl font-bold text-orange-400">Severe</div>
+      </div>
+      <div class="kpi rounded-lg p-3">
+        <div class="text-xs text-slate-400 uppercase">Aircraft (region)</div>
+        <div class="text-2xl font-bold text-cyan-400" id="kpiAir">—</div>
       </div>
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-3">
-      <div class="lg:col-span-2 relative">
-        <div id="map" class="rounded-lg border border-slate-700"></div>
-        <div class="absolute bottom-3 left-3 z-10 bg-slate-900/90 text-xs px-2 py-1 rounded border border-slate-600">
-          Live ADS-B (Persian Gulf / Hormuz box)
-        </div>
-      </div>
-
-      <div class="hide-fs space-y-3">
-        <div class="bg-slate-900 rounded-lg border border-slate-700 p-3 max-h-[40vh] overflow-auto">
-          <h2 class="text-sm font-semibold mb-2 text-slate-300">Aircraft in Area (<span id="airCount">0</span>)</h2>
-          <table class="w-full text-xs">
-            <thead><tr class="text-slate-500 text-left"><th>Callsign</th><th>Alt</th><th>Spd</th></tr></thead>
-            <tbody id="airTable"></tbody>
-          </table>
-        </div>
-
-        <div class="bg-slate-900 rounded-lg border border-slate-700 p-3">
-          <h2 class="text-sm font-semibold mb-2 text-slate-300">Key Notes</h2>
-          <ul class="text-xs space-y-2 text-slate-400">
-            <li class="alert-high pl-2">IRGC claims direct control; passage requires Iranian approval.</li>
-            <li class="alert-high pl-2">Multiple tanker attacks (July) — crews forced to abandon ships.</li>
-            <li class="alert-med pl-2">US conducting multi-night strike campaign against Iranian assets.</li>
-            <li class="alert-med pl-2">June MoU collapsed after Iran resumed pressure on shipping.</li>
-            <li>~20% of global oil normally transits Hormuz; flow now heavily disrupted.</li>
-          </ul>
-        </div>
-      </div>
+    <div class="bg-slate-900 rounded-lg border border-slate-700 p-3 mb-4">
+      <h2 class="text-sm font-semibold mb-2 text-slate-300">Key Notes</h2>
+      <ul class="text-xs space-y-2 text-slate-400">
+        <li class="alert-high pl-2">IRGC claims direct control; passage requires Iranian approval.</li>
+        <li class="alert-high pl-2">Multiple tanker attacks (July) — crews forced to abandon ships.</li>
+        <li class="alert-med pl-2">US conducting multi-night strike campaign against Iranian assets.</li>
+        <li class="alert-med pl-2">June MoU collapsed after Iran resumed pressure on shipping.</li>
+        <li>~20% of global oil normally transits Hormuz; flow now heavily disrupted.</li>
+      </ul>
     </div>
 
-    <div class="hide-fs mt-4 bg-slate-900 rounded-lg border border-slate-700 p-3">
+    <div class="bg-slate-900 rounded-lg border border-slate-700 p-3 mb-4">
       <h2 class="text-sm font-semibold mb-3 text-slate-300">Recent Developments (2026)</h2>
-      <div id="timeline" class="space-y-2 text-xs">
+      <div class="space-y-2 text-xs">
         <div class="flex gap-3"><span class="text-slate-500 w-20 shrink-0">~1 Aug</span><span>IRGC Navy publicly claims control of Hormuz; issues radio orders requiring approval for commercial transit.</span></div>
         <div class="flex gap-3"><span class="text-slate-500 w-20 shrink-0">Late Jul</span><span>Continued US airstrikes (multiple consecutive nights). Tanker attacks persist. Oil prices pushed higher.</span></div>
         <div class="flex gap-3"><span class="text-slate-500 w-20 shrink-0">13–14 Jul</span><span>Iran attacks at least 3 commercial vessels (incl. Emirati tankers). CENTCOM strikes Iranian targets used to threaten shipping.</span></div>
@@ -97,33 +72,23 @@
       </div>
     </div>
 
-    <p class="hide-fs text-[10px] text-slate-600 mt-4 text-center">
-      Aircraft: OpenSky / ADS-B (Persian Gulf box). Events compiled from open-source reporting (AP, Al Jazeera, ISW, CENTCOM statements). Not official. Free AIS coverage limited.
+    <div class="bg-slate-900 rounded-lg border border-slate-700 p-3">
+      <h2 class="text-sm font-semibold mb-2 text-slate-300">Military Aircraft in Region (<span id="airCount">0</span>)</h2>
+      <div class="overflow-auto max-h-48">
+        <table class="w-full text-xs">
+          <thead><tr class="text-slate-500 text-left"><th>Callsign</th><th>ICAO</th><th>Alt</th><th>Spd</th></tr></thead>
+          <tbody id="airTable"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <p class="text-[10px] text-slate-600 mt-4 text-center">
+      Aircraft: OpenSky / ADS-B (Persian Gulf box). Events from open-source reporting. Not official.
     </p>
   </div>
 
   <script>
     const HORMUZ = { lamin: 24.0, lomin: 55.5, lamax: 28.5, lomax: 60.5 };
-
-    const map = L.map('map').setView([26.5, 56.5], 7);
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-      attribution: '&copy; OSM & CARTO'
-    }).addTo(map);
-
-    L.rectangle([[24.8, 56.2], [26.8, 57.0]], {
-      color: '#f59e0b', weight: 1, fillOpacity: 0.08, dashArray: '4 4'
-    }).addTo(map).bindTooltip('Strait of Hormuz');
-
-    let markers = L.layerGroup().addTo(map);
-    let aircraft = [];
-    let isFS = false;
-
-    function toggleFS() {
-      isFS = !isFS;
-      document.getElementById('app').classList.toggle('fs-map', isFS);
-      document.getElementById('fsBtn').textContent = isFS ? 'Exit Full' : 'Full Map';
-      setTimeout(() => map.invalidateSize(), 250);
-    }
 
     async function fetchAir() {
       try {
@@ -131,37 +96,32 @@
         const res = await fetch(url);
         if (!res.ok) throw new Error(res.status);
         const data = await res.json();
-        aircraft = (data.states || []).map(s => ({
+        const aircraft = (data.states || []).map(s => ({
           icao: s[0],
           callsign: (s[1] || '').trim(),
-          lat: s[6],
-          lon: s[5],
           alt: s[7],
           spd: s[9]
-        })).filter(a => a.lat && a.lon);
+        })).filter(a => a.icao);
         document.getElementById('kpiAir').textContent = aircraft.length;
         document.getElementById('airCount').textContent = aircraft.length;
         document.getElementById('lastUpdate').textContent = new Date().toLocaleTimeString();
-        renderAir();
+        renderAir(aircraft);
       } catch (e) {
         try {
           const res2 = await fetch('/.netlify/functions/mil');
           const data2 = await res2.json();
-          aircraft = (data2.ac || []).filter(a => {
-            const lat = a.lat, lon = a.lon;
-            return lat >= HORMUZ.lamin && lat <= HORMUZ.lamax && lon >= HORMUZ.lomin && lon <= HORMUZ.lomax;
+          const aircraft = (data2.ac || []).filter(a => {
+            return a.lat >= HORMUZ.lamin && a.lat <= HORMUZ.lamax && a.lon >= HORMUZ.lomin && a.lon <= HORMUZ.lomax;
           }).map(a => ({
             icao: a.hex,
             callsign: (a.flight || '').trim(),
-            lat: a.lat,
-            lon: a.lon,
             alt: a.alt_baro || a.alt_geom,
             spd: a.gs
           }));
           document.getElementById('kpiAir').textContent = aircraft.length;
           document.getElementById('airCount').textContent = aircraft.length;
           document.getElementById('lastUpdate').textContent = new Date().toLocaleTimeString() + ' (proxy)';
-          renderAir();
+          renderAir(aircraft);
         } catch (e2) {
           document.getElementById('lastUpdate').textContent = 'Air data unavailable';
           document.getElementById('kpiAir').textContent = '—';
@@ -169,18 +129,12 @@
       }
     }
 
-    function renderAir() {
-      markers.clearLayers();
+    function renderAir(aircraft) {
       const tbody = document.getElementById('airTable');
       tbody.innerHTML = '';
       aircraft.forEach(a => {
-        L.circleMarker([a.lat, a.lon], {
-          radius: 5, color: '#22d3ee', fillColor: '#22d3ee', fillOpacity: 0.85
-        }).bindPopup(`${a.callsign || 'N/A'}<br>${a.icao}<br>${a.alt ? Math.round(a.alt) + ' m' : '—'} / ${a.spd ? Math.round(a.spd) + ' m/s' : '—'}`)
-          .addTo(markers);
-
         const tr = document.createElement('tr');
-        tr.innerHTML = `<td class="py-0.5">${a.callsign || '—'}</td><td>${a.alt ? Math.round(a.alt) : '—'}</td><td>${a.spd ? Math.round(a.spd) : '—'}</td>`;
+        tr.innerHTML = `<td class="py-0.5">${a.callsign || '—'}</td><td>${a.icao || '—'}</td><td>${a.alt ? Math.round(a.alt) : '—'}</td><td>${a.spd ? Math.round(a.spd) : '—'}</td>`;
         tbody.appendChild(tr);
       });
     }
