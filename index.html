@@ -10,6 +10,7 @@
     .kpi { background: linear-gradient(145deg, #1e293b, #0f172a); border: 1px solid #334155; }
     .alert-high { border-left: 4px solid #ef4444; }
     .alert-med { border-left: 4px solid #f59e0b; }
+    .alert-low { border-left: 4px solid #22d3ee; }
   </style>
 </head>
 <body class="p-3">
@@ -17,7 +18,7 @@
     <header class="flex flex-wrap justify-between items-center gap-2 mb-4 py-2">
       <div>
         <h1 class="text-xl sm:text-2xl font-bold text-amber-400">Hormuz Watch</h1>
-        <p class="text-xs text-slate-400">Iran Conflict • Strait of Hormuz Monitor</p>
+        <p class="text-xs text-slate-400">Iran Conflict • Strait of Hormuz Monitor • Updated 2 Aug 2026</p>
       </div>
       <div class="flex gap-2 items-center text-xs">
         <span id="lastUpdate" class="text-slate-400">—</span>
@@ -25,22 +26,22 @@
       </div>
     </header>
 
-    <div id="statusBanner" class="mb-4 p-3 rounded-lg bg-red-950/60 border border-red-800 text-sm">
-      <strong class="text-red-300">STATUS (as of early Aug 2026):</strong>
-      <span id="statusText"> Active US–Iran hostilities over Hormuz control. IRGC asserts approval required for transit; multiple commercial vessels attacked since July. US conducting repeated strikes. Shipping traffic severely reduced. Oil prices elevated.</span>
+    <div class="mb-4 p-3 rounded-lg bg-red-950/60 border border-red-800 text-sm">
+      <strong class="text-red-300">CURRENT STATUS:</strong>
+      <span> Active low-intensity hostilities continue. IRGC claims control of Hormuz and issues radio orders requiring approval for transit. Two new incidents reported 1 Aug (UKMTO). Trump indicated outlines of a regional deal and pause on new US strikes. Shipping remains heavily disrupted; oil prices elevated.</span>
     </div>
 
     <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
       <div class="kpi rounded-lg p-3">
-        <div class="text-xs text-slate-400 uppercase">Hormuz Risk Level</div>
+        <div class="text-xs text-slate-400 uppercase">Risk Level</div>
         <div class="text-2xl font-bold text-red-400">HIGH</div>
       </div>
       <div class="kpi rounded-lg p-3">
-        <div class="text-xs text-slate-400 uppercase">Recent Incidents</div>
-        <div class="text-2xl font-bold text-amber-400">10+</div>
+        <div class="text-xs text-slate-400 uppercase">Documented Attacks</div>
+        <div class="text-2xl font-bold text-amber-400">15+</div>
       </div>
       <div class="kpi rounded-lg p-3">
-        <div class="text-xs text-slate-400 uppercase">Oil Flow Impact</div>
+        <div class="text-xs text-slate-400 uppercase">Oil Impact</div>
         <div class="text-2xl font-bold text-orange-400">Severe</div>
       </div>
       <div class="kpi rounded-lg p-3">
@@ -50,25 +51,26 @@
     </div>
 
     <div class="bg-slate-900 rounded-lg border border-slate-700 p-3 mb-4">
-      <h2 class="text-sm font-semibold mb-2 text-slate-300">Key Notes</h2>
+      <h2 class="text-sm font-semibold mb-2 text-slate-300">Key Facts</h2>
       <ul class="text-xs space-y-2 text-slate-400">
-        <li class="alert-high pl-2">IRGC claims direct control; passage requires Iranian approval.</li>
-        <li class="alert-high pl-2">Multiple tanker attacks (July) — crews forced to abandon ships.</li>
-        <li class="alert-med pl-2">US conducting multi-night strike campaign against Iranian assets.</li>
-        <li class="alert-med pl-2">June MoU collapsed after Iran resumed pressure on shipping.</li>
-        <li>~20% of global oil normally transits Hormuz; flow now heavily disrupted.</li>
+        <li class="alert-high pl-2">IRGC Navy asserts direct control; commercial vessels told passage requires Iranian approval.</li>
+        <li class="alert-high pl-2">1 Aug: Two UKMTO incidents — one near-miss explosion, one tanker hit (engine room damage).</li>
+        <li class="alert-med pl-2">Trump (1 Aug): Mideast allies reached “outlines of a deal”; US to hold new strikes for now.</li>
+        <li class="alert-med pl-2">June MoU collapsed after Iran resumed pressure tactics on shipping.</li>
+        <li class="alert-low pl-2">Conflict ongoing since late Feb 2026. ~20% of global oil normally transits Hormuz.</li>
+        <li class="alert-low pl-2">Reported seafarer deaths: 17+ since start of crisis (open-source tallies).</li>
       </ul>
     </div>
 
     <div class="bg-slate-900 rounded-lg border border-slate-700 p-3 mb-4">
-      <h2 class="text-sm font-semibold mb-3 text-slate-300">Recent Developments (2026)</h2>
+      <h2 class="text-sm font-semibold mb-3 text-slate-300">Timeline (selected)</h2>
       <div class="space-y-2 text-xs">
-        <div class="flex gap-3"><span class="text-slate-500 w-20 shrink-0">~1 Aug</span><span>IRGC Navy publicly claims control of Hormuz; issues radio orders requiring approval for commercial transit.</span></div>
-        <div class="flex gap-3"><span class="text-slate-500 w-20 shrink-0">Late Jul</span><span>Continued US airstrikes (multiple consecutive nights). Tanker attacks persist. Oil prices pushed higher.</span></div>
-        <div class="flex gap-3"><span class="text-slate-500 w-20 shrink-0">13–14 Jul</span><span>Iran attacks at least 3 commercial vessels (incl. Emirati tankers). CENTCOM strikes Iranian targets used to threaten shipping.</span></div>
-        <div class="flex gap-3"><span class="text-slate-500 w-20 shrink-0">6–7 Jul</span><span>Three ships attacked after Iran accused them of transiting without approval. US escalates strikes; Trump declares truce over.</span></div>
-        <div class="flex gap-3"><span class="text-slate-500 w-20 shrink-0">Jun 2026</span><span>US–Iran MoU aimed at ending fighting and restoring Hormuz traffic. Later collapses as Iran asserts control protocols.</span></div>
-        <div class="flex gap-3"><span class="text-slate-500 w-20 shrink-0">Context</span><span>Broader 2026 Iran war involving US, Israel, and regional actors. Strait effectively disrupted for weeks.</span></div>
+        <div class="flex gap-3"><span class="text-slate-500 w-24 shrink-0">1–2 Aug</span><span>IRGC control claims continue. Two new strait incidents reported by UKMTO. Trump signals possible pause on new strikes amid regional deal talks.</span></div>
+        <div class="flex gap-3"><span class="text-slate-500 w-24 shrink-0">Late Jul</span><span>Sustained US airstrike campaign (multiple consecutive nights). Additional tanker attacks. Oil prices climb above $100.</span></div>
+        <div class="flex gap-3"><span class="text-slate-500 w-24 shrink-0">13–14 Jul</span><span>Iran attacks ≥3 commercial vessels (incl. Emirati tankers). CENTCOM strikes Iranian assets used to threaten shipping.</span></div>
+        <div class="flex gap-3"><span class="text-slate-500 w-24 shrink-0">6–7 Jul</span><span>Three ships attacked after Iran accused them of unauthorized transit. Trump declares truce over; major escalation begins.</span></div>
+        <div class="flex gap-3"><span class="text-slate-500 w-24 shrink-0">17 Jun</span><span>US–Iran MoU signed (mediated via Pakistan) to end fighting and restore Hormuz traffic. Deal later collapses.</span></div>
+        <div class="flex gap-3"><span class="text-slate-500 w-24 shrink-0">28 Feb</span><span>US–Israel air campaign against Iran begins. Iran moves to restrict / close Hormuz. Crisis starts.</span></div>
       </div>
     </div>
 
@@ -83,7 +85,7 @@
     </div>
 
     <p class="text-[10px] text-slate-600 mt-4 text-center">
-      Aircraft: OpenSky / ADS-B (Persian Gulf box). Events from open-source reporting. Not official.
+      Aircraft data: OpenSky / ADS-B (Persian Gulf bounding box). Events compiled from open-source reporting (UKMTO, AP, Al Jazeera, CENTCOM, Wikipedia crisis page). Not official or complete.
     </p>
   </div>
 
